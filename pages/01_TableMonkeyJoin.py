@@ -23,12 +23,16 @@ def read_table_file(table_file, header_row_from=1, header_row_to=1) -> pd.DataFr
                                     default_dtype=pd.StringDtype)
     return read_df
 
-# ==============================================
-# UI
-# ==============================================
 
+# ==============================================
+# Title
+# ==============================================
 st.title('TableMonkeyJoin')
 
+
+# ==============================================
+# upload file
+# ==============================================
 st.header('01 Upload Table Files')
 left_table_column, right_table_column = st.columns(2)
 with left_table_column:
@@ -53,6 +57,10 @@ with right_table_column:
         right_df = read_table_file(table_file=right_table_file, header_row_from=right_table__header_row_from, header_row_to=right_table__header_row_to)
         st.dataframe(right_df)
 
+
+# ==============================================
+# Setting JOIN Condition
+# ==============================================
 st.header('02 Set Join Condition')
 if left_table_file is None or right_table_file is None:
     st.info('Please upload table files first.')
@@ -66,6 +74,9 @@ else:
 join_mode = st.selectbox(label='Join Mode', options=['Left', 'Right', 'Inner', 'Outer', 'Cross'])
 
 
+# ==============================================
+# Join Table & download csv
+# ==============================================
 st.header('03 Download Join Result')
 left_df[left_join_column_name] = left_df[left_join_column_name].astype(str)
 right_df[right_join_column_name] = right_df[right_join_column_name].astype(str)
