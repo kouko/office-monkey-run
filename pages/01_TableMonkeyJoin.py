@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import re
+from page_utility import read_table_file_to_df
 
 
 # ==============================================
@@ -18,30 +18,9 @@ st.set_page_config(page_title='OfficeMonkeyRun : TableMonkeyJoin',
 # ==============================================
 @st.cache_data
 def read_table_file(table_file, header_row_from=1, header_row_to=1) -> pd.DataFrame:
-    header_index_list = list(range(header_row_from-1, header_row_to))
-    if table_file is None:
-        return None
-    else:
-        if table_file.type == 'text/csv':
-            read_df = pd.read_csv(table_file, header=header_index_list, encoding_errors='ignore')
-        elif table_file.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-            read_df = pd.read_excel(table_file, header=header_index_list)
-        else:
-            raise TypeError(f'table_file type error: {table_file.type}')
-    # 只有 index 被指定超過 1 row 時才要特殊處理
-    if len(header_index_list) > 1:
-        column_name_df = pd.DataFrame(read_df.columns.tolist())
-        column_name_df = column_name_df.astype(str)
-        column_name_df.replace(to_replace='^Unnamed.*$', value=None, regex=True, inplace=True)
-        column_name_df.replace(to_replace='', value=None, regex=False, inplace=True)
-        column_name_df.fillna(method='ffill', inplace=True)
-        for idx in column_name_df.index.tolist():
-            column_name_df.loc[idx] = column_name_df.loc[idx].fillna(str(idx))
-
-        # st.dataframe(column_name_df)
-        new_column_name_array = column_name_df.values.tolist()
-        new_column_name_list = ['>'.join(new_column_name_l) for new_column_name_l in new_column_name_array]
-        read_df.columns = new_column_name_list
+    read_df = read_table_file_to_df(table_file=table_file,
+                                    header_row_from=header_row_from, header_row_to=header_row_to,
+                                    default_dtype=pd.StringDtype)
     return read_df
 
 # ==============================================
