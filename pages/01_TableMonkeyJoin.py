@@ -28,16 +28,20 @@ def read_table_file(table_file, header_row_from=1, header_row_to=1) -> pd.DataFr
             read_df = pd.read_excel(table_file, header=header_index_list)
         else:
             raise TypeError(f'table_file type error: {table_file.type}')
+    # 只有 index 被指定超過 1 row 時才要特殊處理
     if len(header_index_list) > 1:
-        columns_name_list = read_df.columns.tolist()
-        new_columns_name_list = []
-        for column_index, column_name in enumerate(columns_name_list):
-            new_column_name = ':'.join([str(column_name_in_level) for column_name_in_level in column_name if not bool(re.match('Unnamed', str(column_name_in_level)))])
-            if new_column_name is None or new_column_name == '':
-                new_column_name = str(column_index)
-            new_columns_name_list.append(new_column_name)
-        read_df.columns = new_columns_name_list
+        column_name_df = pd.DataFrame(read_df.columns.tolist())
+        column_name_df = column_name_df.astype(str)
+        column_name_df.replace(to_replace='^Unnamed.*$', value=None, regex=True, inplace=True)
+        column_name_df.replace(to_replace='', value=None, regex=False, inplace=True)
+        column_name_df.fillna(method='ffill', inplace=True)
+        for idx in column_name_df.index.tolist():
+            column_name_df.loc[idx] = column_name_df.loc[idx].fillna(str(idx))
 
+        # st.dataframe(column_name_df)
+        new_column_name_array = column_name_df.values.tolist()
+        new_column_name_list = ['>'.join(new_column_name_l) for new_column_name_l in new_column_name_array]
+        read_df.columns = new_column_name_list
     return read_df
 
 # ==============================================
@@ -51,16 +55,22 @@ left_table_column, right_table_column = st.columns(2)
 with left_table_column:
     left_table_file = st.file_uploader(label='Left Table', type=['csv', 'xlsx'], key='left_table', accept_multiple_files=False)
     if left_table_file is not None:
-        left_table__header_row_from = st.number_input(label='Column Name From Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_from')
-        left_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_to')
+        left_table__header_row__column_1, left_table__header_row__column_2 = st.columns(2)
+        with left_table__header_row__column_1:
+            left_table__header_row_from = st.number_input(label='Column Name From Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_from')
+        with left_table__header_row__column_2:
+            left_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_to')
         left_df = read_table_file(table_file=left_table_file, header_row_from=left_table__header_row_from, header_row_to=left_table__header_row_to)
         st.dataframe(left_df)
 
 with right_table_column:
     right_table_file = st.file_uploader(label='Right Table', type=['csv', 'xlsx'], key='right_table', accept_multiple_files=False)
     if right_table_file is not None:
-        right_table__header_row_from = st.number_input(label='Column Name From Row : ', min_value=1, max_value=None, value=1, step=1, key='right_table_row_from')
-        right_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='right_table_row_to')
+        right_table__header_row__column_1, right_table__header_row__column_2 = st.columns(2)
+        with right_table__header_row__column_1:
+            right_table__header_row_from = st.number_input(label='Column Name From Row : ', min_value=1, max_value=None, value=1, step=1, key='right_table_row_from')
+        with right_table__header_row__column_2:
+            right_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='right_table_row_to')
         right_df = read_table_file(table_file=right_table_file, header_row_from=right_table__header_row_from, header_row_to=right_table__header_row_to)
         st.dataframe(right_df)
 
