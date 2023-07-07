@@ -12,7 +12,7 @@ st.set_page_config(page_title='OfficeMonkeyRun',
 
 sidebar_title = '''
     <a target="_self" href="./" style="text-decoration:none;">
-        <h1 style="font-size:950%;line-height:0.8em;text-color:white;font-weight:300;text-align:left;">
+        <h1 style="font-family: 'Helvetica', 'Arial', sans-serif;font-size:950%;line-height:0.8em;text-color:white;font-weight:300;text-align:left;">
             Office</br>Monkey</br>Run
         </h1>
     </a>

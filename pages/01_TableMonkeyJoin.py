@@ -23,12 +23,16 @@ def read_table_file(table_file, header_row_from=1, header_row_to=1) -> pd.DataFr
                                     default_dtype=pd.StringDtype)
     return read_df
 
-# ==============================================
-# UI
-# ==============================================
 
+# ==============================================
+# Title
+# ==============================================
 st.title('TableMonkeyJoin')
 
+
+# ==============================================
+# upload file
+# ==============================================
 st.header('01 Upload Table Files')
 left_table_column, right_table_column = st.columns(2)
 with left_table_column:
@@ -53,6 +57,10 @@ with right_table_column:
         right_df = read_table_file(table_file=right_table_file, header_row_from=right_table__header_row_from, header_row_to=right_table__header_row_to)
         st.dataframe(right_df)
 
+
+# ==============================================
+# Setting JOIN Condition
+# ==============================================
 st.header('02 Set Join Condition')
 if left_table_file is None or right_table_file is None:
     st.info('Please upload table files first.')
@@ -60,20 +68,28 @@ if left_table_file is None or right_table_file is None:
 else:
     left_join_column, right_join_column = st.columns(2)
     with left_join_column:
-        left_join_column_name = st.selectbox(label='Left Join Column', options=left_df.columns)
+        left_join_column_name = st.multiselect(label='Left Join Column', options=left_df.columns)
     with right_join_column:
-        right_join_column_name = st.selectbox(label='Right Join Column', options=right_df.columns)
+        right_join_column_name = st.multiselect(label='Right Join Column', options=right_df.columns)
 join_mode = st.selectbox(label='Join Mode', options=['Left', 'Right', 'Inner', 'Outer', 'Cross'])
 
 
+# ==============================================
+# Join Table & download csv
+# ==============================================
 st.header('03 Download Join Result')
-left_df[left_join_column_name] = left_df[left_join_column_name].astype(str)
-right_df[right_join_column_name] = right_df[right_join_column_name].astype(str)
-join_df = pd.merge(left=left_df, right=right_df,
-                   how=join_mode.lower(),
-                   left_on=left_join_column_name, right_on=right_join_column_name,
-                   suffixes=('_left', '_right'))
-st.dataframe(join_df)
+if len(left_join_column_name) == 0 or len(right_join_column_name) == 0:
+    st.info('Please set join condition first.')
+    st.stop()
+elif len(left_join_column_name) != len(right_join_column_name):
+    st.info('Please set same number of join condition.')
+    st.stop()
+else:
+    join_df = pd.merge(left=left_df, right=right_df,
+                       how=join_mode.lower(),
+                       left_on=left_join_column_name, right_on=right_join_column_name,
+                       suffixes=('_left', '_right'))
+    st.dataframe(join_df)
 
-csv = join_df.to_csv(index=False).encode('utf-8')
-st.download_button(label='Download CSV', data=csv, file_name='join.csv', mime='text/csv', key='download_csv', use_container_width=True)
+    csv = join_df.to_csv(index=False).encode('utf-8')
+    st.download_button(label='Download CSV', data=csv, file_name='join.csv', mime='text/csv', key='download_csv', use_container_width=True)
