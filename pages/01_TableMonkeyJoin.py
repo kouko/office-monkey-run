@@ -44,7 +44,7 @@ with left_table_column:
         with left_table__header_row__column_2:
             left_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_to')
         left_df = read_table_file(table_file=left_table_file, header_row_from=left_table__header_row_from, header_row_to=left_table__header_row_to)
-        st.dataframe(left_df)
+        st.dataframe(left_df, use_container_width=True)
 
 with right_table_column:
     right_table_file = st.file_uploader(label='Right Table', type=['csv', 'xlsx'], key='right_table', accept_multiple_files=False)
@@ -55,7 +55,7 @@ with right_table_column:
         with right_table__header_row__column_2:
             right_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='right_table_row_to')
         right_df = read_table_file(table_file=right_table_file, header_row_from=right_table__header_row_from, header_row_to=right_table__header_row_to)
-        st.dataframe(right_df)
+        st.dataframe(right_df, use_container_width=True)
 
 
 # ==============================================
@@ -89,7 +89,7 @@ else:
                        how=join_mode.lower(),
                        left_on=left_join_column_name, right_on=right_join_column_name,
                        suffixes=('_left', '_right'))
-    st.dataframe(join_df)
+    st.dataframe(join_df, use_container_width=True)
 
     csv = join_df.to_csv(index=False).encode('utf-8')
     st.download_button(label='Download CSV', data=csv, file_name='join.csv', mime='text/csv', key='download_csv', use_container_width=True)
