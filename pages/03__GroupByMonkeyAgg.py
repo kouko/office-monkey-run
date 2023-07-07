@@ -40,7 +40,7 @@ if uploaded_table_file is not None:
     with left_table__header_row__column_2:
         left_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_to')
     table_file_df = read_table_file(table_file=uploaded_table_file, header_row_from=left_table__header_row_from, header_row_to=left_table__header_row_to)
-    st.dataframe(table_file_df)
+    st.dataframe(table_file_df, use_container_width=True)
 else:
     st.info('Please upload table files first.')
     table_file_df = pd.DataFrame()

@@ -37,11 +37,12 @@ if uploaded_table_file is not None:
     with left_table__header_row__column_2:
         left_table__header_row_to = st.number_input(label='Column Name To Row : ', min_value=1, max_value=None, value=1, step=1, key='left_table_row_to')
     table_file_df = read_table_file(table_file=uploaded_table_file, header_row_from=left_table__header_row_from, header_row_to=left_table__header_row_to)
-    st.dataframe(table_file_df)
+    st.dataframe(table_file_df, use_container_width=True)
 
 st.header('02 Set Columns for duplicated check')
 if uploaded_table_file is None:
     st.info('Please upload table files first.')
+    duplicated_check_column_list = []
     st.stop()
 else:
     duplicated_check_column_list = st.multiselect(label='Columns for duplicated check : ', options=table_file_df.columns.tolist(), default=None, key='left_table_duplicated_check_column')
@@ -66,7 +67,7 @@ else:
     st.error('Unknown Mode : {}'.format(mode))
     result_df = pd.DataFrame()
     st.stop()
-st.dataframe(result_df)
+st.dataframe(result_df, use_container_width=True)
 csv = result_df.to_csv(index=False).encode('utf-8')
 filename = 'drop_duplicated.csv' if mode == 'Drop Duplicated' else 'only_duplicated.csv'
 st.download_button(label='Download CSV', data=csv, file_name=filename, mime='text/csv', key='download_csv', use_container_width=True)
