@@ -23,8 +23,11 @@ def apollo_hr_leave_list_text_to_dataframe(leave_list: str) -> pd.DataFrame:
         ticker_regex = r'(\d+)'
         datetime_regex = r'(\d{4}/\d{2}/\d{2}\s\d{2}:\d{2})'
         period_regex = r'(\d+)\s時\s(\d+)\s分'
+        period_regex_en = r'(\d+)\shr\s(\d+)\smin'
         full_regex = f'^{date_regex}\s~\s{date_regex}\s{ticker_regex}\s{datetime_regex}\s~\s{datetime_regex}\s{period_regex}$'
+        full_regex_en = f'^{date_regex}\s~\s{date_regex}\s{ticker_regex}\s{datetime_regex}\s~\s{datetime_regex}\s{period_regex_en}$'
         line_is_leave_data = bool(re.search(full_regex, line_clean))
+        line_is_leave_data_en = bool(re.search(full_regex_en, line_clean))
 
         # print(line_is_title, line_is_empty, line_is_leave_data)
 
@@ -32,15 +35,16 @@ def apollo_hr_leave_list_text_to_dataframe(leave_list: str) -> pd.DataFrame:
             pass
         elif line_is_empty:
             pass
-        elif line_is_leave_data:
+        elif line_is_leave_data or line_is_leave_data_en:
+            line_regex = full_regex if line_is_leave_data else full_regex_en
             leave_data_dict = {
-                'effect_start_date': re.search(full_regex, line_clean).group(1),
-                'effect_end_date': re.search(full_regex, line_clean).group(2),
-                'ticker_no': re.search(full_regex, line_clean).group(3),
-                'on_leave': re.search(full_regex, line_clean).group(4),
-                'off_leave': re.search(full_regex, line_clean).group(5),
-                'period_hour': re.search(full_regex, line_clean).group(6),
-                'period_minute': re.search(full_regex, line_clean).group(7)
+                'effect_start_date': re.search(line_regex, line_clean).group(1),
+                'effect_end_date': re.search(line_regex, line_clean).group(2),
+                'ticker_no': re.search(line_regex, line_clean).group(3),
+                'on_leave': re.search(line_regex, line_clean).group(4),
+                'off_leave': re.search(line_regex, line_clean).group(5),
+                'period_hour': re.search(line_regex, line_clean).group(6),
+                'period_minute': re.search(line_regex, line_clean).group(7)
             }
             line_data_dict_list.append(leave_data_dict)
     line_data_df = pd.DataFrame(line_data_dict_list)

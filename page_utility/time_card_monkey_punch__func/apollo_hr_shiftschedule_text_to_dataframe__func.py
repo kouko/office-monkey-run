@@ -33,7 +33,7 @@ def apollo_hr_shiftschedule_text_to_dataframe(shift_schedule: str) -> pd.DataFra
         first_element_is_day = bool(re.search(r'^[0-9]{2}$', line[0]))
         line_len = len(line)
         last_element_is_period = bool(re.search(r'^[0-9]{2}:[0-9]{2}~[0-9]{2}:[0-9]{2}$', line[-1]))
-        last_element_is_off = bool(re.search(r'例假日|休息日|國定假日', line[-1]))
+        last_element_is_off = bool(re.search(r'例假日|休息日|國定假日|flexible rest day|One fixed day off|National holiday', line[-1]))
         if first_element_is_day and last_element_is_off and line_len == 3:
             day_dict = {
                 'day': int(line[0]),

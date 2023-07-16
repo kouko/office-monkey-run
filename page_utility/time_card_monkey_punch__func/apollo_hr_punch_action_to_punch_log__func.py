@@ -21,6 +21,11 @@ def apollo_hr_punch_action_to_punch_log(
     ).reset_index(drop=False)
     punch_action_df.sort_values(by=['punch_time'], inplace=True, ignore_index=True)
     punch_action_df.insert(loc=0, column='punch_date', value=pd.to_datetime(punch_action_df['punch_time']).dt.date)
+    on_off_columns = ['on_duty', 'off_duty', 'on_break', 'off_break', 'on_leave', 'off_leave']
+    for column in on_off_columns:
+        if column not in punch_action_df.columns:
+            punch_action_df[column] = None
+    punch_action_df = punch_action_df[['punch_date', 'punch_time'] + on_off_columns]
 
     # ==============================================
     # Filter data by month
