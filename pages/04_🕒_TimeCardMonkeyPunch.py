@@ -71,22 +71,25 @@ with location_column:
 schedule_column, leave_column = st.columns(2)
 
 with schedule_column:
-    st.header('2.Schedule')
-    shift_schedule = st.text_area(label='Shift Schedule',
+    st.header('2.Shift Schedule')
+    shift_schedule = st.text_area(label='Go [HERE](https://apollo.mayohr.com/ta/personal/shiftschedule) , copy all text in Calendar and paste here.',
                                   key='shift_schedule',
                                   value='',
                                   height=120)
     shift_schedule_df = apollo_hr_shiftschedule_text_to_dataframe(shift_schedule=shift_schedule)
-    st.dataframe(shift_schedule_df, height=240, use_container_width=True)
+    with st.expander(label='Shift Schedule parsing results.', expanded=False):
+        st.dataframe(shift_schedule_df, use_container_width=True)
 
 with leave_column:
     st.header('3.Leave List')
-    leave_list = st.text_area(label='Leave List',
+
+    leave_list = st.text_area(label='Go [HERE](https://apollo.mayohr.com/ta/personal/leave-list/history-search) , copy all text in Leave details and paste here.',
                               key='leave_list',
                               value='',
                               height=120)
     leave_list_df = apollo_hr_leave_list_text_to_dataframe(leave_list=leave_list)
-    st.dataframe(leave_list_df, height=240, use_container_width=True)
+    with st.expander(label='Leave List parsing results.', expanded=False):
+        st.dataframe(leave_list_df, use_container_width=True)
 
 # ==============================================
 # Combine Schedule & Dayoff
@@ -98,11 +101,13 @@ st.header('4.Punch Record')
 # ==============================================
 
 if shift_schedule_df.empty:
+    st.info('Download Punch Log xlsx file after input Shift Schedule least.')
     st.stop()
 
 last_day_in_month = pd.Timestamp(month).to_period('M').to_timestamp(freq='M', how='S')
 if shift_schedule_df['day'].max() != last_day_in_month.day:
     st.warning(f'輸入的 Shift Schedule 日期不符合設定月份的天數，請確認是否正確')
+    st.stop()
 
 with st.expander(label='Generator', expanded=False):
     st.caption('Shift Schedule -> Shift Schedule Punch Action')
