@@ -34,13 +34,13 @@ def apollo_hr_leave_list_text_to_dataframe(leave_list: str) -> pd.DataFrame:
             pass
         elif line_is_leave_data:
             leave_data_dict = {
-                'start_datetime': re.search(full_regex, line_clean).group(4),
-                'end_datetime': re.search(full_regex, line_clean).group(5),
-                'period_hour': re.search(full_regex, line_clean).group(6),
-                'period_minute': re.search(full_regex, line_clean).group(7),
                 'effect_start_date': re.search(full_regex, line_clean).group(1),
                 'effect_end_date': re.search(full_regex, line_clean).group(2),
                 'ticker_no': re.search(full_regex, line_clean).group(3),
+                'on_leave': re.search(full_regex, line_clean).group(4),
+                'off_leave': re.search(full_regex, line_clean).group(5),
+                'period_hour': re.search(full_regex, line_clean).group(6),
+                'period_minute': re.search(full_regex, line_clean).group(7)
             }
             line_data_dict_list.append(leave_data_dict)
     line_data_df = pd.DataFrame(line_data_dict_list)
