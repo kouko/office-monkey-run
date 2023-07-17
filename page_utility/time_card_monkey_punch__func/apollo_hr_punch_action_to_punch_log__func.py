@@ -38,7 +38,6 @@ def apollo_hr_punch_action_to_punch_log(
     # State Analytics
     # ==============================================
     def state_analytics(row, on_column, off_column):
-        print(row[on_column])
         if row[on_column] == on_column:
             return True
         elif row[off_column] == off_column:

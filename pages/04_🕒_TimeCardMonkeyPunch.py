@@ -28,7 +28,7 @@ cookie_expires_at = datetime.datetime.now() + datetime.timedelta(days=365)
 # ==============================================
 # Page Title
 # ==============================================
-st.title('TimeCardMonkeyPunch')
+st.title('🕒 TimeCardMonkeyPunch')
 
 
 # ==============================================
@@ -53,15 +53,15 @@ def write_cookie():
 employee_column, name_column, location_column = st.columns(3)
 with employee_column:
     employee_no__in_cookie = cookie_manager.get(cookie='employee_no')
-    employee_no__default = employee_no__in_cookie if employee_no__in_cookie != 'None' else ''
+    employee_no__default = employee_no__in_cookie if employee_no__in_cookie is not None else ''
     employee_no = st.text_input(label='Employee Number', value=employee_no__default, placeholder='員工編號', key='employee_no', on_change=write_cookie)
 with name_column:
     employee_name__in_cookie = cookie_manager.get(cookie='employee_name')
-    employee_name__default = employee_name__in_cookie if employee_name__in_cookie != 'None' else ''
+    employee_name__default = employee_name__in_cookie if employee_name__in_cookie is not None else ''
     employee_name = st.text_input(label='Employee Name', value=employee_name__default, placeholder='員工姓名',  key='employee_name', on_change=write_cookie)
 with location_column:
     location__in_cookie = cookie_manager.get(cookie='location')
-    location__default = location__in_cookie if location__in_cookie != 'None' else ''
+    location__default = location__in_cookie if location__in_cookie is not None else ''
     location = st.text_input(label='Location', value=location__default, placeholder='工作地點',  key='location', on_change=write_cookie)
 
 
@@ -92,16 +92,17 @@ with leave_column:
         st.dataframe(leave_list_df, use_container_width=True)
 
 # ==============================================
-# Combine Schedule & Dayoff
+# Download Punch Record
 # ==============================================
-st.header('4.Punch Record')
+st.header('4.Download Punch Record')
 
-# ==============================================
-# Processing...
-# ==============================================
-
+# Check input
 if shift_schedule_df.empty:
-    st.info('Download Punch Log xlsx file after input Shift Schedule least.')
+    st.info('Download Punch Log after input Shift Schedule least.')
+    st.stop()
+
+if employee_no is None or employee_no == '' or location is None or location == '':
+    st.warning('Employee Number and location must be specified.')
     st.stop()
 
 last_day_in_month = pd.Timestamp(month).to_period('M').to_timestamp(freq='M', how='S')
@@ -109,27 +110,29 @@ if shift_schedule_df['day'].max() != last_day_in_month.day:
     st.warning(f'輸入的 Shift Schedule 日期不符合設定月份的天數，請確認是否正確')
     st.stop()
 
-with st.expander(label='Generator', expanded=False):
-    st.caption('Shift Schedule -> Shift Schedule Punch Action')
+# Processing....
+with st.expander(label='Process', expanded=False):
+    st.subheader('4-1. Shift Schedule -> Shift Schedule Punch Action')
     shift_schedule__punch_action_df, shift_schedule__debug_df = apollo_hr_shiftschedule_df_to_punch_action(shift_schedule_df=shift_schedule_df, month=month)
     st.dataframe(shift_schedule__debug_df, height=240, use_container_width=True)
 
-    st.caption('Leave List -> Leave Punch Action')
+    st.subheader('4-2. Leave List -> Leave Punch Action')
     leave_list__punch_action_df, leave_list__debug_df = apollo_hr_leave_list_df_to_punch_action(leave_list_df=leave_list_df)
     st.dataframe(leave_list__debug_df, height=240, use_container_width=True)
 
-    st.caption('Shift Schedule Punch Action -> Break Punch Action')
+    st.subheader('4-3. Shift Schedule Punch Action -> Break Punch Action')
     break__punch_action_df, break__debug_df = apollo_hr_shiftschedule_punch_action_to_break_punch_action(
         shift_schedule__punch_action_df=shift_schedule__punch_action_df)
     st.dataframe(break__debug_df, height=240, use_container_width=True)
 
+    st.subheader('4-4. Punch Action -> Punch Log')
     punch_log_df, punch_action_df = apollo_hr_punch_action_to_punch_log(
         punch_action_df_list=[shift_schedule__punch_action_df, leave_list__punch_action_df, break__punch_action_df],
         month=month,
         employee_no=employee_no,
         employee_name=employee_name,
         location=location)
-    st.dataframe(punch_action_df, height=240, use_container_width=True)
+    st.dataframe(punch_action_df, height=480, use_container_width=True)
 
 st.dataframe(punch_log_df, height=240, use_container_width=True)
 
@@ -141,9 +144,9 @@ writer = pd.ExcelWriter(buffer, engine='xlsxwriter')
 punch_log_df.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.close()
 download2 = st.download_button(
-    label="Download data as Excel",
+    label="DOWNLOAD PUNCH LOG AS EXCEL FILE",
     data=buffer,
-    file_name=f'{month}月打卡紀錄.xlsx',
+    file_name=f'{month}月{employee_no}打卡紀錄.xlsx',
     mime='application/vnd.ms-excel',
     use_container_width=True
 )
