@@ -8,6 +8,7 @@ from page_utility.time_card_monkey_punch__func import apollo_hr_shiftschedule_df
 from page_utility.time_card_monkey_punch__func import apollo_hr_leave_list_df_to_punch_action
 from page_utility.time_card_monkey_punch__func import apollo_hr_shiftschedule_punch_action_to_break_punch_action
 from page_utility.time_card_monkey_punch__func import apollo_hr_punch_action_to_punch_log
+from page_utility.time_card_monkey_punch__func import apollp_hr_punch_log_random_engine
 import io
 
 # ==============================================
@@ -32,9 +33,9 @@ st.title('🕒 TimeCardMonkeyPunch')
 
 
 # ==============================================
-# Basic Info
+# Basic Setting
 # ==============================================
-st.header('1.Basic Info')
+st.header('1.Basic Setting')
 month_list__start = (pd.Timestamp.now(tz='Asia/Taipei') - pd.DateOffset(months=13)).strftime('%Y-%m')
 month_list__end = (pd.Timestamp.now(tz='Asia/Taipei') - pd.DateOffset(months=0)).strftime('%Y-%m')
 
@@ -63,6 +64,23 @@ with location_column:
     location__in_cookie = cookie_manager.get(cookie='location')
     location__default = location__in_cookie if location__in_cookie is not None else ''
     location = st.text_input(label='Location', value=location__default, placeholder='工作地點',  key='location', on_change=write_cookie)
+
+# More Optioins
+with st.expander(label='More Option', expanded=False):
+    st.subheader('Random Punch Option')
+    random_mode_column, random_range_column = st.columns(2)
+    with random_mode_column:
+        random_mode = st.selectbox(label='Random Mode',
+                                   key='random_mode',
+                                   options=['Simple Random', 'None'],
+                                   index=0)
+    with random_range_column:
+        random_range = st.number_input(label='Random Range (±minuteas)',
+                                       key='random_range',
+                                       value=15,
+                                       min_value=0,
+                                       max_value=90,
+                                       step=1)
 
 
 # ==============================================
@@ -134,16 +152,26 @@ with st.expander(label='Process', expanded=False):
         location=location)
     st.dataframe(punch_action_df, height=480, use_container_width=True)
 
-st.dataframe(punch_log_df, height=240, use_container_width=True)
+    st.subheader('4-5. Random Punch Log')
+    random_punch_log_df, random_debug_df = apollp_hr_punch_log_random_engine(
+        punch_log_df=punch_log_df,
+        random_mode=random_mode,
+        random_range=random_range)
+    st.dataframe(random_debug_df, height=480, use_container_width=True)
+
+
+# final output
+final_punch_log_df = random_punch_log_df.copy()
+st.dataframe(final_punch_log_df, height=240, use_container_width=True)
 
 # REF : https://stackoverflow.com/questions/75323732/how-to-download-streamlit-output-data-frame-as-excel-file
 # REF https://stackoverflow.com/questions/76090979/xlsxwriter-object-has-no-attribute-save-did-you-mean-save
 buffer = io.BytesIO()
 writer = pd.ExcelWriter(buffer, engine='xlsxwriter')
 # Write each dataframe to a different worksheet.
-punch_log_df.to_excel(writer, sheet_name='Sheet1', index=False)
+final_punch_log_df.to_excel(writer, sheet_name=f'{month}_{employee_no}', index=False)
 writer.close()
-download2 = st.download_button(
+download = st.download_button(
     label="DOWNLOAD PUNCH LOG AS EXCEL FILE",
     data=buffer,
     file_name=f'{month}月{employee_no}打卡紀錄.xlsx',
