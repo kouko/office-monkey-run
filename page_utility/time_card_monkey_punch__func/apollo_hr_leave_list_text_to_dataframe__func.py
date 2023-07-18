@@ -20,7 +20,7 @@ def apollo_hr_leave_list_text_to_dataframe(leave_list: str) -> pd.DataFrame:
         line_is_title = bool(re.search('有效期限', line_clean))
         line_is_empty = bool(re.search('^\s*$', line_clean))
         date_regex = r'(\d{4}/\d{2}/\d{2})'
-        ticker_regex = r'(\d+)'
+        ticker_regex = r'([^\s\t]+)'
         datetime_regex = r'(\d{4}/\d{2}/\d{2}\s\d{2}:\d{2})'
         period_regex = r'(\d+)\s時\s(\d+)\s分'
         period_regex_en = r'(\d+)\shr\s(\d+)\smin'
