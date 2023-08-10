@@ -20,7 +20,10 @@ st.set_page_config(page_title='OfficeMonkeyRun : MultiMonkeyFileConcat',
 @st.cache_data
 def read_table_file(table_file, header_row_from=1, header_row_to=1) -> pd.DataFrame:
     read_df = read_table_file_to_df(table_file=table_file,
-                                    header_row_from=header_row_from, header_row_to=header_row_to)
+                                    header_row_from=header_row_from,
+                                    header_row_to=header_row_to,
+                                    default_dtype=pd.StringDtype
+                                    )
     return read_df
 
 
